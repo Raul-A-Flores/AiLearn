@@ -14,17 +14,23 @@ import {motion, AnimatePresence} from 'framer-motion';
 import { useMutation, useQuery  } from '@tanstack/react-query'
 import axios from 'axios'
 import { useToast } from './ui/use-toast'
+import { useRouter } from 'next/navigation'
 
 type Props = {}
 
 type Input = z.infer<typeof createChapterSchema>
 
 const CreateCourseForm = (props: Props) => {
+
+    const router = useRouter()
     const { toast } = useToast()
 
     const { mutate: createChapters, isPending} = useMutation({
         mutationFn: async({title, units}: Input) =>{
-            const response = await axios.post('/api/course/createChapters')
+            const response = await axios.post('/api/course/createChapters', {
+                title, 
+                units,
+            })
             return response.data
         }
     })
@@ -38,7 +44,6 @@ const CreateCourseForm = (props: Props) => {
     });
 
     function onSubmit(data: Input){
-        console.log(data, 'daaaaaaaaaaaaaaaaaaata')
         if(data.units.some(unit=>unit==='')){
             toast({
                 title: 'Error',
@@ -47,11 +52,20 @@ const CreateCourseForm = (props: Props) => {
             })
         }
         createChapters(data,{
-            onSuccess: () =>{
-
+            onSuccess: ({ course_id }) =>{
+                toast({
+                    title: 'Success',
+                    description: 'Course created Successfuly',
+                });
+                router.push(`/create/${course_id}`)
             },
             onError: (error)=>{
-                console.log(error)
+                toast({
+                    title: 'Error',
+                    description: 'Something went wrong',
+                    variant: 'destructive'
+                })
+
             }
         })
     }
