@@ -11,12 +11,23 @@ import { Separator } from './ui/separator';
 import { Button } from './ui/button';
 import { Plus, Trash } from 'lucide-react';
 import {motion, AnimatePresence} from 'framer-motion';
+import { useMutation, useQuery  } from '@tanstack/react-query'
+import axios from 'axios'
+import { useToast } from './ui/use-toast'
 
 type Props = {}
 
 type Input = z.infer<typeof createChapterSchema>
 
 const CreateCourseForm = (props: Props) => {
+    const { toast } = useToast()
+
+    const { mutate: createChapters, isPending} = useMutation({
+        mutationFn: async({title, units}: Input) =>{
+            const response = await axios.post('/api/course/createChapters')
+            return response.data
+        }
+    })
 
     const form = useForm<Input>({
         resolver: zodResolver(createChapterSchema),
@@ -27,7 +38,22 @@ const CreateCourseForm = (props: Props) => {
     });
 
     function onSubmit(data: Input){
-        console.log(data);
+        console.log(data, 'daaaaaaaaaaaaaaaaaaata')
+        if(data.units.some(unit=>unit==='')){
+            toast({
+                title: 'Error',
+                description: 'Please fill all the units',
+                variant: 'destructive'
+            })
+        }
+        createChapters(data,{
+            onSuccess: () =>{
+
+            },
+            onError: (error)=>{
+                console.log(error)
+            }
+        })
     }
 
     form.watch();
@@ -86,14 +112,11 @@ const CreateCourseForm = (props: Props) => {
                                                         placeholder='Enter subtopic of the course'
                                                         {...field}
                                                         />
-
                                                 </FormControl>
-                                            
                                             </FormItem>
                                         )
                                     }}
                                     >
-
                                 </FormField>
 
                             </motion.div>
@@ -133,7 +156,8 @@ const CreateCourseForm = (props: Props) => {
                 </div>
                 <Button
                     className='w-full mt-6'
-                    type='button'
+                    type='submit'
+                    disabled={isPending}
                     size='lg'
                     >Lets Go!</Button>
             </form>
