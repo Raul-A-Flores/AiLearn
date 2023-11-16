@@ -2,8 +2,8 @@
 
 
 import { Chapter, Course, Unit } from '@prisma/client'
-import React from 'react'
-import ChapterCard from './ChapterCard'
+import React, { useRef } from 'react'
+import ChapterCard, { ChapterCardHandler } from './ChapterCard'
 import { Separator } from './ui/separator'
 import { Button, buttonVariants } from './ui/button'
 import Link from 'next/link'
@@ -21,15 +21,29 @@ type Props = {
 }
 
 const ConfirmChapters = ({course}: Props) => {
-    const chapterRefs: Record<string, React.RefObject<>> = {}
-    course.units.forEach(unit=>{
-        unit.chapters.forEach(chapter =>{
 
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            chapterRefs[chapter.id] = React.useRef(null)
-        })
-    })
-    console.log(chapterRefs)
+    const [loading, setLoading] = React.useState(false) 
+    const chapterRefs: Record<string, React.RefObject<ChapterCardHandler>> = {};
+    
+    course.units.forEach((unit) => {
+      unit.chapters.forEach((chapter) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        chapterRefs[chapter.id] = React.useRef(null);
+      });
+    });
+/* 
+    const [ completedChapters, setCompletedChapters] = React.useState<Set<String>>(new Set())
+
+    const totalChaptersCount = React.useMemo(()=>{
+        return course.units.reduce((acc, unit)=>{
+            return acc + unit.chapters.length;
+        },0)
+    }, [course.units])
+ */
+   // console.log('Total Chapter Count: ', totalChaptersCount)
+  //  console.log('Completed Chapters Size: ', completedChapters.size);
+
+       
   return (
     <div className='w-full mt-4 '>
         {course.units.map((unit, unitIndex)=>{
@@ -44,8 +58,13 @@ const ConfirmChapters = ({course}: Props) => {
                         {unit.chapters.map((chapter, chapterIndex)=>{
                             return (
                                 <ChapterCard  
+                            /*     completedChapters={completedChapters}
+                                setCompletedChapters={setCompletedChapters} */
                                 ref={chapterRefs[chapter.id]}
-                                key={chapter.id} chapter={chapter} chapterIndex={chapterIndex}/>
+                                key={chapter.id}
+                                chapter={chapter}
+                                chapterIndex={chapterIndex}
+                                />
                             )
                         })}
                         
@@ -64,14 +83,16 @@ const ConfirmChapters = ({course}: Props) => {
                 Back
                 </Link>
                 <Button
-                onClick={()=>{
-                    Object.values(chapterRefs).forEach((ref)=>{
-                        ref.current?.triggerLoad()
-                    })
-
-                }}
+                    onClick={()=>{
+                        setLoading(true)
+                        Object.values(chapterRefs).forEach((ref)=>{
+                            ref.current?.triggerLoad()
+                        })
+                    }}
                     type='button'
+                    disabled={loading}
                     className='ml-4 font-semibold'
+                    
                     >
                     Generate
                     <ChevronRight  className='w-4 h-4 ml-2' strokeWidth={4}/>

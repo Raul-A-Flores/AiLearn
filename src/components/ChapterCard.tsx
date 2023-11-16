@@ -5,6 +5,8 @@ import { Chapter } from '@prisma/client'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import React, { useState } from 'react'
+import { useToast } from './ui/use-toast'
+import { error } from 'console'
 
 type Props = {
     chapter: Chapter
@@ -17,37 +19,51 @@ export type ChapterCardHandler ={
 
 
 const ChapterCard = React.forwardRef<ChapterCardHandler, Props>(
-    ({chapter, chapterIndex}, ref) => {
-
-
-    React.useImperativeHandle(ref, ()=>({
+  ({chapter, chapterIndex}, ref) => {
+      
+      const [success, setSuccess] = React.useState<boolean | null>(null)
+      const { toast } = useToast()
+      
+      React.useImperativeHandle(ref, () =>({
         async triggerLoad(){
-            getChatperInfo(undefined),{
-                onSuccess: () =>{
-                    console.log('success')
-                }
+          getChapterInfo(undefined, {
+            onSuccess: ()=>{
+              setSuccess(true)
+            },
+            onError: (error)=>{
+              console.error(error)
+              setSuccess(false)
+              toast({
+                title: 'error',
+                description: 'Something went wrong',
+                variant: 'destructive'
+            })
             }
-        }
-    }))
-    const [success, setSuccess] = useState(null)
 
-    const { mutate: getChatperInfo, isPending } = useMutation({
-        mutationFn: async() =>{
-            const response = await axios.post(`/api/chapter/getInfo`)
-            return response.data
-        }
-    })
+          })
+            }
+        }))
+
+
+        const { mutate: getChapterInfo, isPending } = useMutation({
+            mutationFn: async() =>{
+                const response = await axios.post('/api/chapter/getInfo', {
+                    chapterId: chapter.id,
+                  });
+                  return response.data;
+            }
+        })
 
   return (
     <div key={chapter.id} className={
         cn('bg-seconday px-4 py-2 mt-2 rounded flex justify-between',
          {'bg-secondary': success === null,
          'bg-red-500': success === false, 
-         'bg-}green-500': success === true, 
+         'bg-green-500': success === true, 
         }
          )
     }>
-        <h5>Chapter {chapterIndex +1} {chapter.name}</h5>
+        <h5>{chapter.name}</h5>
         
     </div>
   )
