@@ -7,6 +7,7 @@ import axios from 'axios'
 import React, { useState } from 'react'
 import { useToast } from './ui/use-toast'
 import { error } from 'console'
+import { Loader2 } from 'lucide-react'
 
 type Props = {
     chapter: Chapter
@@ -96,6 +97,7 @@ const ChapterCard = React.forwardRef<ChapterCardHandler, Props>(
          )
     }>
         <h5>{chapter.name}</h5>
+       { isPending && <Loader2 className='animate-spin'/>}
         
     </div>
   )
