@@ -15,6 +15,7 @@ import { useMutation, useQuery  } from '@tanstack/react-query'
 import axios from 'axios'
 import { useToast } from './ui/use-toast'
 import { useRouter } from 'next/navigation'
+import SubscriptionAction from './SubscriptionAction'
 
 type Props = {}
 
@@ -176,7 +177,7 @@ const CreateCourseForm = (props: Props) => {
                     >Lets Go!</Button>
             </form>
         </Form>
-
+    <SubscriptionAction />
     </div>
   )
 }
