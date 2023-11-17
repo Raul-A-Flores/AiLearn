@@ -1,6 +1,7 @@
 import ConfirmChapters from '@/components/ConfirmChapters';
 import { getAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { checkSubscription } from '@/lib/subscription';
 import { Info } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import React from 'react'
@@ -34,7 +35,6 @@ const CreateChapters = async  ({params: { courseId }}: Props) => {
         return redirect('/create')
     }
 
-    
   return (
    /*  <div>
         <pre>{JSON.stringify(course, null, 2)}</pre>
