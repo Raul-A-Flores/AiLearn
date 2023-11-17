@@ -78,8 +78,9 @@ export async function POST(req: Request, res: Response){
       
           
 
-          return NextResponse.json({ videoId, summary, transcript});
+         // return NextResponse.json({ videoId, summary, transcript});
 
+          return NextResponse.json({ success: true });
 
 
 
