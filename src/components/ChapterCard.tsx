@@ -11,6 +11,8 @@ import { error } from 'console'
 type Props = {
     chapter: Chapter
     chapterIndex: number
+    completedChapters: Set<String>
+    setCompletedChapters: React.Dispatch<React.SetStateAction<Set<String>>>
 };
 
 export type ChapterCardHandler ={
@@ -19,16 +21,52 @@ export type ChapterCardHandler ={
 
 
 const ChapterCard = React.forwardRef<ChapterCardHandler, Props>(
-  ({chapter, chapterIndex}, ref) => {
+  ({chapter, chapterIndex, completedChapters, setCompletedChapters}, ref) => {
       
       const [success, setSuccess] = React.useState<boolean | null>(null)
       const { toast } = useToast()
+
       
+      const { mutate: getChapterInfo, isPending } = useMutation({
+        mutationFn: async() =>{
+            const response = await axios.post('/api/chapter/getInfo', {
+                chapterId: chapter.id,
+              });
+              return response.data;
+        }
+    })
+
+    const addChapterIdToSet = React.useCallback(() => {
+      setCompletedChapters((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(chapter.id);
+        return newSet;
+      });
+    }, [chapter.id, setCompletedChapters]);
+      
+
+      React.useEffect(()=>{
+        if(chapter.videoId){
+          setSuccess(true)
+          addChapterIdToSet()
+        }
+      },[chapter,addChapterIdToSet])
+
+
+
       React.useImperativeHandle(ref, () =>({
         async triggerLoad(){
+          if(chapter.videoId){
+            addChapterIdToSet()
+            return
+          }
+
+
           getChapterInfo(undefined, {
             onSuccess: ()=>{
               setSuccess(true)
+              addChapterIdToSet()
+
             },
             onError: (error)=>{
               console.error(error)
@@ -38,6 +76,8 @@ const ChapterCard = React.forwardRef<ChapterCardHandler, Props>(
                 description: 'Something went wrong',
                 variant: 'destructive'
             })
+            addChapterIdToSet()
+
             }
 
           })
@@ -45,14 +85,6 @@ const ChapterCard = React.forwardRef<ChapterCardHandler, Props>(
         }))
 
 
-        const { mutate: getChapterInfo, isPending } = useMutation({
-            mutationFn: async() =>{
-                const response = await axios.post('/api/chapter/getInfo', {
-                    chapterId: chapter.id,
-                  });
-                  return response.data;
-            }
-        })
 
   return (
     <div key={chapter.id} className={
