@@ -34,7 +34,7 @@ export async function POST(req: Request, res: Response){
                 youtube_search_query: string;
                 chapter_title: string;
 
-            }[]
+            }
         }[];
 
 
